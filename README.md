@@ -41,7 +41,7 @@ It merges the power of OpenCore Legacy Patcher with our custom kexts, Metal laye
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/skyscope-patcher.git
+git clone https://github.com/skyscope-sentinel/skyscope-patcher.git
 cd skyscope-patcher
 
 # 2. Build and install everything (macOS, requires sudo)
