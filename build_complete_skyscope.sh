@@ -140,9 +140,21 @@ install_dependencies() {
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
     
-    # Install required packages
-    log "Installing required packages" "INFO"
-    brew install cmake python@3.11 llvm lief
+    # Install required brew packages (lief removed – use pip instead)
+    log "Installing required Homebrew packages" "INFO"
+    if ! brew install cmake python@3.11 llvm; then
+        log "Homebrew package installation failed" "ERROR"
+        exit 1
+    fi
+
+    # Install LIEF via pip (more reliable than brew)
+    log "Installing Python package: lief" "INFO"
+    if ! pip3 install --upgrade lief >/dev/null 2>&1; then
+        log "WARN: Failed to install 'lief' with pip. Linux driver extraction will be skipped." "WARNING"
+        LIEF_AVAILABLE=0
+    else
+        LIEF_AVAILABLE=1
+    fi
     
     # Install Python packages
     log "Installing Python packages" "INFO"
@@ -565,6 +577,12 @@ EOF
 
 # Function to extract Linux drivers
 extract_linux_drivers() {
+    # Skip extraction when lief is not present
+    if [[ "${LIEF_AVAILABLE}" == "0" ]]; then
+        log "Skipping Linux driver extraction – lief not available." "WARNING"
+        return 0
+    fi
+
     log "Extracting Linux drivers" "STEP"
     
     # Create directories
