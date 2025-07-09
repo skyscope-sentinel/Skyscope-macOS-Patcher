@@ -31,7 +31,8 @@ KEXTS_DIR="${SCRIPT_DIR}/resources/Kexts"
 SRC_DIR="${SCRIPT_DIR}/src"
 OUTPUT_DIR="${SCRIPT_DIR}/output"
 TEMP_DIR="${BUILD_DIR}/temp"
-LOG_FILE="${SCRIPT_DIR}/build.log"
+# Log file goes to user’s home directory to avoid permission issues
+LOG_FILE="${HOME}/skyscope_build.log"
 VERSION="1.0.0"
 BUILD_DATE="July 9, 2025"
 
@@ -76,12 +77,35 @@ log() {
 }
 
 # Function to check if running as root
-check_root() {
-    if [ "$EUID" -ne 0 ]; then
-        log "This script must be run as root to install kexts" "ERROR"
-        log "Please run with: sudo $0" "ERROR"
+# ----------------------------------------
+#  Some steps (Homebrew, building, etc.)
+#  MUST run as the regular user because
+#  Homebrew refuses to operate as root.
+#  The sections that truly need privilege
+#  (kext copy, chmod/chown, nvram write,
+#  kextcache) dynamically request sudo.
+# ----------------------------------------
+
+# Abort early if the user invoked the whole
+# script with sudo/root – that breaks Brew.
+check_not_root() {
+    if [ "$EUID" -eq 0 ]; then
+        log "ERROR: Do NOT run this script with sudo." "ERROR"
+        log "Homebrew cannot run as root. Please re-run without sudo." "ERROR"
         exit 1
     fi
+}
+
+# Cache sudo credentials when required
+prompt_for_sudo() {
+    if ! sudo -n true 2>/dev/null; then
+        echo
+        log "Administrator privileges are required for the next step." "WARNING"
+        log "You may be prompted for your password..." "WARNING"
+        sudo -v || { log "Failed to obtain sudo privileges." "ERROR"; exit 1; }
+    fi
+    # refresh sudo timestamp while we work
+    sudo -n true 2>/dev/null
 }
 
 # Function to create directories
@@ -561,41 +585,50 @@ extract_linux_drivers() {
 # Function to install kexts
 install_kexts() {
     log "Installing kexts" "STEP"
+
+    # Honor --no-kexts flag
+    if [[ "${SKIP_KEXTS}" == "1" ]]; then
+        log "Kext installation skipped per user request." "INFO"
+        return 0
+    fi
     
     # Check if kextcache is available
     if ! command -v kextcache &>/dev/null; then
         log "kextcache command not found. Cannot install kexts." "ERROR"
         return 1
     fi
+
+    # Ensure we have sudo rights for the upcoming filesystem operations
+    prompt_for_sudo
     
     # Install NVIDIA kexts
     log "Installing NVIDIA kexts" "INFO"
-    cp -r "${KEXTS_DIR}/NVBridgeCore.kext" "/Library/Extensions/"
-    cp -r "${KEXTS_DIR}/NVBridgeMetal.kext" "/Library/Extensions/"
-    cp -r "${KEXTS_DIR}/NVBridgeCUDA.kext" "/Library/Extensions/"
+    sudo cp -r "${KEXTS_DIR}/NVBridgeCore.kext" "/Library/Extensions/"
+    sudo cp -r "${KEXTS_DIR}/NVBridgeMetal.kext" "/Library/Extensions/"
+    sudo cp -r "${KEXTS_DIR}/NVBridgeCUDA.kext" "/Library/Extensions/"
     
     # Install Intel Arc kexts
     log "Installing Intel Arc kexts" "INFO"
-    cp -r "${KEXTS_DIR}/ArcBridgeCore.kext" "/Library/Extensions/"
-    cp -r "${KEXTS_DIR}/ArcBridgeMetal.kext" "/Library/Extensions/"
+    sudo cp -r "${KEXTS_DIR}/ArcBridgeCore.kext" "/Library/Extensions/"
+    sudo cp -r "${KEXTS_DIR}/ArcBridgeMetal.kext" "/Library/Extensions/"
     
     # Set permissions
     log "Setting kext permissions" "INFO"
-    chmod -R 755 "/Library/Extensions/NVBridgeCore.kext"
-    chmod -R 755 "/Library/Extensions/NVBridgeMetal.kext"
-    chmod -R 755 "/Library/Extensions/NVBridgeCUDA.kext"
-    chmod -R 755 "/Library/Extensions/ArcBridgeCore.kext"
-    chmod -R 755 "/Library/Extensions/ArcBridgeMetal.kext"
+    sudo chmod -R 755 "/Library/Extensions/NVBridgeCore.kext"
+    sudo chmod -R 755 "/Library/Extensions/NVBridgeMetal.kext"
+    sudo chmod -R 755 "/Library/Extensions/NVBridgeCUDA.kext"
+    sudo chmod -R 755 "/Library/Extensions/ArcBridgeCore.kext"
+    sudo chmod -R 755 "/Library/Extensions/ArcBridgeMetal.kext"
     
-    chown -R root:wheel "/Library/Extensions/NVBridgeCore.kext"
-    chown -R root:wheel "/Library/Extensions/NVBridgeMetal.kext"
-    chown -R root:wheel "/Library/Extensions/NVBridgeCUDA.kext"
-    chown -R root:wheel "/Library/Extensions/ArcBridgeCore.kext"
-    chown -R root:wheel "/Library/Extensions/ArcBridgeMetal.kext"
+    sudo chown -R root:wheel "/Library/Extensions/NVBridgeCore.kext"
+    sudo chown -R root:wheel "/Library/Extensions/NVBridgeMetal.kext"
+    sudo chown -R root:wheel "/Library/Extensions/NVBridgeCUDA.kext"
+    sudo chown -R root:wheel "/Library/Extensions/ArcBridgeCore.kext"
+    sudo chown -R root:wheel "/Library/Extensions/ArcBridgeMetal.kext"
     
     # Update kext cache
     log "Updating kext cache" "INFO"
-    kextcache -i /
+    sudo kextcache -i /
     
     log "Kexts installed successfully" "INFO"
 }
@@ -604,9 +637,12 @@ install_kexts() {
 apply_boot_arguments() {
     log "Applying boot arguments" "STEP"
     
+    # nvram requires root privileges
+    prompt_for_sudo
+
     # Set boot arguments for NVIDIA and Intel Arc
     log "Setting boot arguments" "INFO"
-    nvram boot-args="ngfxcompat=1 ngfxgl=1 nvda_drv_vrl=1 iarccompat=1 iarcgl=1 -v"
+    sudo nvram boot-args="ngfxcompat=1 ngfxgl=1 nvda_drv_vrl=1 iarccompat=1 iarcgl=1 -v"
     
     log "Boot arguments applied successfully" "INFO"
 }
