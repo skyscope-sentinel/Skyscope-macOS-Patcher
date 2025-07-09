@@ -677,8 +677,8 @@ main() {
     # Show banner
     show_banner
     
-    # Check if running as root
-    check_root
+    # Ensure script is NOT run as root for Homebrew safety
+    check_not_root
     
     # Create directories
     create_directories
