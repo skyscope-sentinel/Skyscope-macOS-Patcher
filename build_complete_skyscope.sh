@@ -149,7 +149,7 @@ install_dependencies() {
 
     # Install LIEF via pip (more reliable than brew)
     log "Installing Python package: lief" "INFO"
-    if ! pip3 install --upgrade lief >/dev/null 2>&1; then
+    if ! pip3 install --upgrade lief --break-system-packages >/dev/null 2>&1; then
         log "WARN: Failed to install 'lief' with pip. Linux driver extraction will be skipped." "WARNING"
         LIEF_AVAILABLE=0
     else
@@ -158,7 +158,7 @@ install_dependencies() {
     
     # Install Python packages
     log "Installing Python packages" "INFO"
-    pip3 install requests tqdm pyelftools
+    pip3 install requests tqdm pyelftools --break-system-packages
 }
 
 # Function to compile NVIDIA kexts
