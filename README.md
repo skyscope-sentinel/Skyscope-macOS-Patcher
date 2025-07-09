@@ -41,11 +41,17 @@ It merges the power of OpenCore Legacy Patcher with our custom kexts, Metal laye
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/skyscope-sentinel/skyscope-patcher.git
+git clone https://github.com/your-org/skyscope-patcher.git
 cd skyscope-patcher
 
-# 2. Build and install everything (macOS, requires sudo)
-sudo ./build_complete_skyscope.sh
+# 2. Install Pre Requisite items
+brew install --cask font-comic-relief
+brew install cmake python@3.11 llvm
+
+# The script in step 3. below will automate installation of any other needed libraries and/or applications automatically
+
+# 3. Build and install everything (macOS, run as normal user)
+./build_complete_skyscope.sh
 ```
 
 The script will:
@@ -55,6 +61,10 @@ The script will:
 3. Compile custom kexts.  
 4. Install kexts, set boot-args, rebuild caches.  
 5. Optionally create a bootable USB when `--usb /dev/diskX` is supplied.
+
+When privileged actions (copying kexts to /Library/Extensions, `nvram` writes, etc.) are reached, the
+script automatically prompts for your administrator password via `sudo`.  
+Running the whole script with `sudo` up-front is **not supported**—Homebrew refuses to operate as root.
 
 Reboot after completion to enjoy accelerated graphics.
 
@@ -99,6 +109,20 @@ The resulting installers live in `dist/` and include:
 ├─ build_complete_skyscope.sh
 └─ advanced_config.json
 ```
+
+## ⚠️ Permissions & Troubleshooting
+
+• **Homebrew as root** – If you run the script with `sudo` you will encounter  
+  `Error: Running Homebrew as root is extremely dangerous and no longer supported.`  
+  Always start the script as a normal user; it will elevate only when required.  
+
+• **Log-file permission** – Build logs are written to `~/skyscope_build.log`.  
+  If you previously ran the script as root you may need to `sudo rm` the old log to  
+  avoid “Permission denied” errors on subsequent runs.  
+
+• **Need to re-enter sudo** – The helper keeps the sudo timestamp alive while it  
+  works, but if you step away for ~5 minutes you may be asked for your password a  
+  second time—this is normal macOS behaviour.
 
 ---
 
