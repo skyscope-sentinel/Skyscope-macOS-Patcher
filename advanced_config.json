@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "build_date": "July 9, 2025",
+  "hardware_support": {
+    "nvidia_gpus": [
+      "NVIDIA GeForce GTX 970",
+      "NVIDIA GeForce GTX 980 Ti",
+      "NVIDIA GeForce GTX 1070",
+      "NVIDIA GeForce GTX 1080 Ti"
+    ],
+    "intel_gpus": [
+      "Intel Arc A770",
+      "Intel Arc A750",
+      "Intel Arc A580",
+      "Intel Arc A380"
+    ],
+    "intel_cpus": [
+      "Intel Alder Lake",
+      "Intel Raptor Lake"
+    ]
+  },
+  "macos_versions": {
+    "sequoia": "Sequoia",
+    "tahoe": "Tahoe"
+  },
+  "paths": {
+    "kexts_dir": "resources/Kexts",
+    "work_dir": "~/Library/Caches/SkyscopePatcher",
+    "output_dir": "~/Desktop/Skyscope_Output"
+  },
+  "options": {
+    "enable_nvidia": true,
+    "enable_intel_arc": true,
+    "enable_cuda": true,
+    "enable_metal": true,
+    "create_usb_installer": true,
+    "install_kexts": true,
+    "backup_system": true
+  },
+  "nvidia_options": {
+    "enable_gtx970": true,
+    "enable_gtx980ti": true,
+    "enable_gtx1070": true,
+    "enable_gtx1080ti": true,
+    "metal_compatibility": true,
+    "cuda_support": true,
+    "opencl_support": true,
+    "boot_args": "ngfxcompat=1 ngfxgl=1 nvda_drv_vrl=1"
+  },
+  "intel_arc_options": {
+    "enable_a770": true,
+    "enable_a750": true,
+    "enable_a580": false,
+    "enable_a380": false,
+    "metal_compatibility": true,
+    "opencl_support": true,
+    "boot_args": "iarccompat=1 iarcgl=1"
+  },
+  "cpu_options": {
+    "enable_alder_lake": true,
+    "enable_raptor_lake": true,
+    "power_management": true,
+    "boot_args": "ipc_control_port_options=0"
+  },
+  "installation": {
+    "auto_restart": false,
+    "disable_sip": true,
+    "create_recovery_backup": true,
+    "install_location": "/Library/Extensions",
+    "update_nvram": true
+  },
+  "usb_installer": {
+    "efi_size_mb": 200,
+    "installer_label": "Skyscope_Installer",
+    "include_opencore": true,
+    "opencore_config": "resources/OpenCore/config.plist",
+    "include_diagnostics": true
+  },
+  "advanced": {
+    "debug_mode": false,
+    "verbose_logging": false,
+    "extract_linux_drivers": true,
+    "linux_driver_versions": {
+      "nvidia": ["535.146.02", "550.54.14"],
+      "intel": ["23.17.26241.33"]
+    },
+    "compatibility_checks": true,
+    "force_installation": false
+  }
+}
