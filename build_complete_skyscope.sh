@@ -111,15 +111,15 @@ prompt_for_sudo() {
 # Function to create directories
 create_directories() {
     log "Creating build directories" "STEP"
-    sudo mkdir -p "${BUILD_DIR}"
-    sudo mkdir -p "${KEXTS_DIR}"
-    sudo mkdir -p "${OUTPUT_DIR}"
-    sudo mkdir -p "${TEMP_DIR}"
-    sudo mkdir -p "${KEXTS_DIR}/NVBridgeCore.kext/Contents/MacOS"
-    sudo mkdir -p "${KEXTS_DIR}/NVBridgeMetal.kext/Contents/MacOS"
-    sudo mkdir -p "${KEXTS_DIR}/NVBridgeCUDA.kext/Contents/MacOS"
-    sudo mkdir -p "${KEXTS_DIR}/ArcBridgeCore.kext/Contents/MacOS"
-    sudo mkdir -p "${KEXTS_DIR}/ArcBridgeMetal.kext/Contents/MacOS"
+    mkdir -p "${BUILD_DIR}"
+    mkdir -p "${KEXTS_DIR}"
+    mkdir -p "${OUTPUT_DIR}"
+    mkdir -p "${TEMP_DIR}"
+    mkdir -p "${KEXTS_DIR}/NVBridgeCore.kext/Contents/MacOS"
+    mkdir -p "${KEXTS_DIR}/NVBridgeMetal.kext/Contents/MacOS"
+    mkdir -p "${KEXTS_DIR}/NVBridgeCUDA.kext/Contents/MacOS"
+    mkdir -p "${KEXTS_DIR}/ArcBridgeCore.kext/Contents/MacOS"
+    mkdir -p "${KEXTS_DIR}/ArcBridgeMetal.kext/Contents/MacOS"
 }
 
 # Function to check and install dependencies
@@ -166,7 +166,7 @@ compile_nvidia_kexts() {
     log "Compiling NVIDIA kexts" "STEP"
     
     # Create build directory for NVIDIA kexts
-    sudo mkdir -p "${BUILD_DIR}/nvidia"
+    mkdir -p "${BUILD_DIR}/nvidia"
     cd "${BUILD_DIR}/nvidia"
     
     # Compile NVBridgeCore kext
@@ -202,7 +202,7 @@ compile_intel_arc_kexts() {
     log "Compiling Intel Arc kexts" "STEP"
     
     # Create build directory for Intel Arc kexts
-    sudo mkdir -p "${BUILD_DIR}/intel_arc"
+    mkdir -p "${BUILD_DIR}/intel_arc"
     cd "${BUILD_DIR}/intel_arc"
     
     # Compile ArcBridgeCore kext
@@ -532,7 +532,7 @@ build_python_components() {
     log "Building Python components" "STEP"
     
     # Create Python package structure
-    sudo mkdir -p "${BUILD_DIR}/python/skyscope"
+    mkdir -p "${BUILD_DIR}/python/skyscope"
     
     # Copy Python files
     cp "${SCRIPT_DIR}/skyscope_enhanced.py" "${BUILD_DIR}/python/skyscope/"
@@ -570,7 +570,7 @@ EOF
     
     # Install Python package
     cd "${BUILD_DIR}/python"
-    pip3 install -e .
+    pip3 install -e . --break-system-packages
     
     log "Python components built successfully" "INFO"
 }
@@ -586,8 +586,8 @@ extract_linux_drivers() {
     log "Extracting Linux drivers" "STEP"
     
     # Create directories
-    sudo mkdir -p "${BUILD_DIR}/drivers/nvidia"
-    sudo mkdir -p "${BUILD_DIR}/drivers/intel"
+    mkdir -p "${BUILD_DIR}/drivers/nvidia"
+    mkdir -p "${BUILD_DIR}/drivers/intel"
     
     # Run extractor for NVIDIA drivers
     log "Extracting NVIDIA drivers" "INFO"
