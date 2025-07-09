@@ -1,0 +1,818 @@
+{
+  "version": "1.0.0",
+  "name": "Skyscope macOS Patcher",
+  "developer": "Miss Casey Jay Topojani",
+  "description": "A comprehensive macOS patcher for Sequoia and Tahoe with enhanced hardware support",
+  "supported_macos": [
+    {
+      "name": "Sequoia",
+      "version": "15.0",
+      "build_min": "24A5276i",
+      "build_max": "24A5300g",
+      "installer_url": "https://updates.cdn-apple.com/2023FallSeed/fullrestores/042-50447/9B5C318F-8CA7-4649-9C3A-D1338F8C83E8/UniversalMac_15.0_24A5300g_Restore.ipsw"
+    },
+    {
+      "name": "Tahoe Beta 1",
+      "version": "16.0",
+      "build_min": "25A5160j",
+      "build_max": "25A5160j",
+      "installer_url": "https://updates.cdn-apple.com/2024SummerSeed/fullrestores/042-51234/C8B3DC7F-E1B5-4B49-9985-7B1074B2D2B5/UniversalMac_16.0_25A5160j_Restore.ipsw"
+    },
+    {
+      "name": "Tahoe Beta 2",
+      "version": "16.0",
+      "build_min": "25A5177j",
+      "build_max": "25A5177j",
+      "installer_url": "https://updates.cdn-apple.com/2024SummerSeed/fullrestores/042-51654/B7D2E1A7-7F9A-4F5B-9E1C-D9C0F9C8D3A5/UniversalMac_16.0_25A5177j_Restore.ipsw"
+    }
+  ],
+  "hardware_compatibility": {
+    "gpu": {
+      "nvidia": {
+        "kepler": {
+          "compatible": true,
+          "native_support": true,
+          "requires_patches": false,
+          "models": ["GTX 650", "GTX 650 Ti", "GTX 660", "GTX 660 Ti", "GTX 670", "GTX 680", "GTX 690", "GTX 760", "GTX 770", "GTX 780", "GTX 780 Ti", "GT 640", "GT 730", "GT 740"]
+        },
+        "maxwell": {
+          "compatible": true,
+          "native_support": false,
+          "requires_patches": true,
+          "requires_nvbridge": true,
+          "models": ["GTX 750", "GTX 750 Ti", "GTX 950", "GTX 960", "GTX 970", "GTX 980", "GTX 980 Ti", "GTX TITAN X"],
+          "specific_models": {
+            "GTX 970": {
+              "device_id": "0x13C2",
+              "vendor_id": "0x10DE",
+              "vram_mb": 4096,
+              "nvcap": "04000000000003000000000000000300000000000000",
+              "rom_revision": "74.04.28.00.70",
+              "special_patches": ["memory-remap", "aspm-disable", "dpr-offload-high-dp"],
+              "boot_args": "nvda_drv=1 ngfxcompat=1 ngfxgl=1 nvda_drv_vrl=1",
+              "recommended_smbios": "iMacPro1,1"
+            }
+          }
+        },
+        "pascal": {
+          "compatible": true,
+          "native_support": false,
+          "requires_patches": true,
+          "requires_nvbridge": true,
+          "models": ["GTX 1050", "GTX 1050 Ti", "GTX 1060", "GTX 1070", "GTX 1070 Ti", "GTX 1080", "GTX 1080 Ti", "GTX TITAN Xp"]
+        },
+        "turing": {
+          "compatible": false,
+          "native_support": false,
+          "notes": "No support possible for RTX 20 series in macOS Sequoia/Tahoe"
+        },
+        "ampere": {
+          "compatible": false,
+          "native_support": false,
+          "notes": "No support possible for RTX 30 series in macOS Sequoia/Tahoe"
+        },
+        "ada_lovelace": {
+          "compatible": false,
+          "native_support": false,
+          "notes": "No support possible for RTX 40 series in macOS Sequoia/Tahoe"
+        }
+      },
+      "intel": {
+        "hd_graphics": {
+          "compatible": true,
+          "native_support": true,
+          "requires_patches": false,
+          "models": ["HD Graphics 4000", "HD Graphics 4600", "HD Graphics 530", "HD Graphics 630"]
+        },
+        "iris": {
+          "compatible": true,
+          "native_support": true,
+          "requires_patches": false,
+          "models": ["Iris Graphics 540", "Iris Graphics 550", "Iris Plus Graphics 640", "Iris Plus Graphics 655"]
+        },
+        "arc": {
+          "compatible": true,
+          "native_support": false,
+          "requires_patches": true,
+          "models": ["Arc A770", "Arc A750", "Arc A580", "Arc A380"],
+          "specific_models": {
+            "Arc A770": {
+              "device_id": "0x5690",
+              "vendor_id": "0x8086",
+              "vram_mb": 16384,
+              "platform_id": "0A00601",
+              "special_patches": ["dvmt-512mb", "agx-arc-metal13", "gfx324-override"],
+              "boot_args": "ipc_control_port_options=0",
+              "recommended_smbios": "Mac14,3"
+            }
+          }
+        }
+      },
+      "amd": {
+        "polaris": {
+          "compatible": true,
+          "native_support": true,
+          "requires_patches": false,
+          "models": ["RX 460", "RX 470", "RX 480", "RX 550", "RX 560", "RX 570", "RX 580", "RX 590"]
+        },
+        "vega": {
+          "compatible": true,
+          "native_support": true,
+          "requires_patches": false,
+          "models": ["Vega 56", "Vega 64", "Vega Frontier Edition", "Radeon VII"]
+        },
+        "navi": {
+          "compatible": true,
+          "native_support": true,
+          "requires_patches": false,
+          "models": ["RX 5500", "RX 5500 XT", "RX 5600", "RX 5600 XT", "RX 5700", "RX 5700 XT"]
+        },
+        "navi2": {
+          "compatible": true,
+          "native_support": true,
+          "requires_patches": false,
+          "models": ["RX 6600", "RX 6600 XT", "RX 6700 XT", "RX 6800", "RX 6800 XT", "RX 6900 XT"]
+        },
+        "navi3": {
+          "compatible": true,
+          "native_support": true,
+          "requires_patches": false,
+          "models": ["RX 7600", "RX 7700 XT", "RX 7800 XT", "RX 7900 XT", "RX 7900 XTX"]
+        }
+      }
+    },
+    "cpu": {
+      "intel": {
+        "6th_gen": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Skylake",
+          "models": ["i3-6xxx", "i5-6xxx", "i7-6xxx"]
+        },
+        "7th_gen": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Kaby Lake",
+          "models": ["i3-7xxx", "i5-7xxx", "i7-7xxx"]
+        },
+        "8th_gen": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Coffee Lake",
+          "models": ["i3-8xxx", "i5-8xxx", "i7-8xxx", "i9-8xxx"]
+        },
+        "9th_gen": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Coffee Lake Refresh",
+          "models": ["i3-9xxx", "i5-9xxx", "i7-9xxx", "i9-9xxx"]
+        },
+        "10th_gen": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Comet Lake",
+          "models": ["i3-10xxx", "i5-10xxx", "i7-10xxx", "i9-10xxx"]
+        },
+        "11th_gen": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Rocket Lake",
+          "models": ["i3-11xxx", "i5-11xxx", "i7-11xxx", "i9-11xxx"]
+        },
+        "12th_gen": {
+          "compatible": true,
+          "requires_patches": true,
+          "family": "Alder Lake",
+          "models": ["i3-12xxx", "i5-12xxx", "i7-12xxx", "i9-12xxx"],
+          "specific_models": {
+            "i7-12700K": {
+              "p_cores": 8,
+              "e_cores": 4,
+              "threads": 20,
+              "special_patches": ["cpuid-mask", "cpu-topology-rebuild", "ec-enabler"],
+              "cpuid_data": "55060A00000000000000000000000000",
+              "cpuid_mask": "FFFFFFFF000000000000000000000000",
+              "boot_args": "-ctrsmt=0",
+              "recommended_smbios": "MacPro7,1"
+            },
+            "i9-12900K": {
+              "p_cores": 8,
+              "e_cores": 8,
+              "threads": 24,
+              "special_patches": ["cpuid-mask", "cpu-topology-rebuild", "ec-enabler"],
+              "cpuid_data": "55060A00000000000000000000000000",
+              "cpuid_mask": "FFFFFFFF000000000000000000000000",
+              "boot_args": "-ctrsmt=0",
+              "recommended_smbios": "MacPro7,1"
+            }
+          }
+        },
+        "13th_gen": {
+          "compatible": true,
+          "requires_patches": true,
+          "family": "Raptor Lake",
+          "models": ["i3-13xxx", "i5-13xxx", "i7-13xxx", "i9-13xxx"],
+          "specific_models": {
+            "i7-13700K": {
+              "p_cores": 8,
+              "e_cores": 8,
+              "threads": 24,
+              "special_patches": ["cpuid-mask", "cpu-topology-rebuild", "ec-enabler", "updated-microcode"],
+              "cpuid_data": "55060A00000000000000000000000000",
+              "cpuid_mask": "FFFFFFFF000000000000000000000000",
+              "boot_args": "-ctrsmt=0",
+              "recommended_smbios": "MacPro7,1"
+            },
+            "i9-13900K": {
+              "p_cores": 8,
+              "e_cores": 16,
+              "threads": 32,
+              "special_patches": ["cpuid-mask", "cpu-topology-rebuild", "ec-enabler", "updated-microcode"],
+              "cpuid_data": "55060A00000000000000000000000000",
+              "cpuid_mask": "FFFFFFFF000000000000000000000000",
+              "boot_args": "-ctrsmt=0",
+              "recommended_smbios": "MacPro7,1"
+            }
+          }
+        },
+        "14th_gen": {
+          "compatible": true,
+          "requires_patches": true,
+          "family": "Raptor Lake Refresh",
+          "models": ["i5-14xxx", "i7-14xxx", "i9-14xxx"],
+          "specific_models": {
+            "i7-14700K": {
+              "p_cores": 8,
+              "e_cores": 12,
+              "threads": 28,
+              "special_patches": ["cpuid-mask", "cpu-topology-rebuild", "ec-enabler", "updated-microcode"],
+              "cpuid_data": "55060A00000000000000000000000000",
+              "cpuid_mask": "FFFFFFFF000000000000000000000000",
+              "boot_args": "-ctrsmt=0",
+              "recommended_smbios": "MacPro7,1"
+            },
+            "i9-14900K": {
+              "p_cores": 8,
+              "e_cores": 16,
+              "threads": 32,
+              "special_patches": ["cpuid-mask", "cpu-topology-rebuild", "ec-enabler", "updated-microcode"],
+              "cpuid_data": "55060A00000000000000000000000000",
+              "cpuid_mask": "FFFFFFFF000000000000000000000000",
+              "boot_args": "-ctrsmt=0",
+              "recommended_smbios": "MacPro7,1"
+            }
+          }
+        }
+      },
+      "amd": {
+        "zen": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Zen 1",
+          "models": ["Ryzen 3 1xxx", "Ryzen 5 1xxx", "Ryzen 7 1xxx"]
+        },
+        "zen+": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Zen+",
+          "models": ["Ryzen 3 2xxx", "Ryzen 5 2xxx", "Ryzen 7 2xxx"]
+        },
+        "zen2": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Zen 2",
+          "models": ["Ryzen 3 3xxx", "Ryzen 5 3xxx", "Ryzen 7 3xxx", "Ryzen 9 3xxx"]
+        },
+        "zen3": {
+          "compatible": true,
+          "requires_patches": false,
+          "family": "Zen 3",
+          "models": ["Ryzen 3 5xxx", "Ryzen 5 5xxx", "Ryzen 7 5xxx", "Ryzen 9 5xxx"]
+        },
+        "zen4": {
+          "compatible": true,
+          "requires_patches": true,
+          "family": "Zen 4",
+          "models": ["Ryzen 5 7xxx", "Ryzen 7 7xxx", "Ryzen 9 7xxx"]
+        }
+      }
+    }
+  },
+  "opencore_settings": {
+    "version": "1.0.5",
+    "base_config": {
+      "ACPI": {
+        "Add": [
+          {
+            "Comment": "SSDT-EC-USBX.aml",
+            "Enabled": true,
+            "Path": "SSDT-EC-USBX.aml"
+          },
+          {
+            "Comment": "SSDT-PLUG.aml",
+            "Enabled": true,
+            "Path": "SSDT-PLUG.aml"
+          }
+        ],
+        "Quirks": {
+          "FadtEnableReset": true,
+          "NormalizeHeaders": false,
+          "RebaseRegions": false,
+          "ResetHwSig": false,
+          "ResetLogoStatus": true
+        }
+      },
+      "Booter": {
+        "Quirks": {
+          "AvoidRuntimeDefrag": true,
+          "DevirtualiseMmio": true,
+          "EnableSafeModeSlide": true,
+          "ProvideCustomSlide": true,
+          "RebuildAppleMemoryMap": true,
+          "SetupVirtualMap": true,
+          "SyncRuntimePermissions": true
+        }
+      },
+      "Kernel": {
+        "Quirks": {
+          "AppleXcpmCfgLock": true,
+          "DisableIoMapper": true,
+          "DisableLinkeditJettison": true,
+          "DisableRtcChecksum": true,
+          "PanicNoKextDump": true,
+          "PowerTimeoutKernelPanic": true,
+          "ProvideCurrentCpuInfo": true,
+          "XhciPortLimit": true
+        }
+      },
+      "Misc": {
+        "Boot": {
+          "HibernateMode": "None",
+          "PickerAttributes": 145,
+          "PickerMode": "External",
+          "PollAppleHotKeys": true,
+          "ShowPicker": true,
+          "Timeout": 5
+        },
+        "Debug": {
+          "AppleDebug": false,
+          "ApplePanic": false,
+          "DisableWatchDog": true,
+          "Target": 3
+        },
+        "Security": {
+          "AllowSetDefault": true,
+          "BlacklistAppleUpdate": true,
+          "ScanPolicy": 0,
+          "SecureBootModel": "Disabled",
+          "Vault": "Optional"
+        }
+      },
+      "NVRAM": {
+        "Add": {
+          "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14": {
+            "DefaultBackgroundColor": "00000000",
+            "UIScale": "01"
+          },
+          "7C436110-AB2A-4BBB-A880-FE41995C9F82": {
+            "boot-args": "-v keepsyms=1 debug=0x100",
+            "csr-active-config": "03000000",
+            "prev-lang:kbd": "en-US:0"
+          }
+        }
+      },
+      "PlatformInfo": {
+        "Automatic": true,
+        "Generic": {
+          "AdviseFeatures": true,
+          "SpoofVendor": true,
+          "SystemProductName": "iMacPro1,1"
+        },
+        "UpdateDataHub": true,
+        "UpdateNVRAM": true,
+        "UpdateSMBIOS": true,
+        "UpdateSMBIOSMode": "Create"
+      },
+      "UEFI": {
+        "APFS": {
+          "EnableJumpstart": true,
+          "HideVerbose": true
+        },
+        "Drivers": [
+          {
+            "Path": "HfsPlus.efi",
+            "Enabled": true
+          },
+          {
+            "Path": "OpenRuntime.efi",
+            "Enabled": true
+          },
+          {
+            "Path": "OpenCanopy.efi",
+            "Enabled": true
+          }
+        ],
+        "Input": {
+          "KeySupport": true
+        },
+        "Output": {
+          "ProvideConsoleGop": true,
+          "Resolution": "Max"
+        },
+        "Quirks": {
+          "EnableVectorAcceleration": true,
+          "ReleaseUsbOwnership": true,
+          "RequestBootVarRouting": true
+        }
+      }
+    },
+    "smbios_models": {
+      "iMacPro1,1": {
+        "description": "Best for NVIDIA GPUs and high-end Intel CPUs",
+        "recommended_for": ["GTX 970", "GTX 980", "GTX 1080", "i9-12900K", "i9-13900K", "i9-14900K"]
+      },
+      "MacPro7,1": {
+        "description": "Best for high-end workstation builds with multiple GPUs",
+        "recommended_for": ["i9-12900K", "i9-13900K", "i9-14900K", "Ryzen 9 7950X"]
+      },
+      "Mac14,3": {
+        "description": "Best for Intel Arc GPUs",
+        "recommended_for": ["Arc A770", "Arc A750"]
+      },
+      "iMac20,2": {
+        "description": "Best for AMD GPUs",
+        "recommended_for": ["RX 6800 XT", "RX 6900 XT", "RX 7900 XTX"]
+      }
+    }
+  },
+  "kext_configurations": {
+    "essential": [
+      {
+        "name": "Lilu.kext",
+        "version": "1.7.1",
+        "description": "Arbitrary kext and process patching",
+        "required": true,
+        "url": "https://github.com/acidanthera/Lilu/releases/download/1.7.1/Lilu-1.7.1-RELEASE.zip",
+        "load_priority": 0
+      },
+      {
+        "name": "VirtualSMC.kext",
+        "version": "1.3.7",
+        "description": "SMC emulator",
+        "required": true,
+        "url": "https://github.com/acidanthera/VirtualSMC/releases/download/1.3.7/VirtualSMC-1.3.7-RELEASE.zip",
+        "load_priority": 10,
+        "plugins": [
+          "SMCProcessor.kext",
+          "SMCSuperIO.kext"
+        ]
+      },
+      {
+        "name": "WhateverGreen.kext",
+        "version": "1.7.0",
+        "description": "Graphics patching",
+        "required": true,
+        "url": "https://github.com/acidanthera/WhateverGreen/releases/download/1.7.0/WhateverGreen-1.7.0-RELEASE.zip",
+        "load_priority": 20,
+        "patches": {
+          "nvidia": {
+            "maxwell": {
+              "property_patches": {
+                "enable_metal": true,
+                "force_online": true,
+                "force_rgb": true
+              },
+              "framebuffer_patches": {
+                "connector_types": [0, 4, 8],
+                "connector_count": 3
+              }
+            }
+          },
+          "intel_arc": {
+            "property_patches": {
+              "enable_metal": true,
+              "force_gfx_submission": true,
+              "force_agx_loader": true
+            }
+          }
+        }
+      }
+    ],
+    "cpu": [
+      {
+        "name": "CPUFriend.kext",
+        "version": "1.3.0",
+        "description": "CPU power management",
+        "required": false,
+        "url": "https://github.com/acidanthera/CPUFriend/releases/download/1.3.0/CPUFriend-1.3.0-RELEASE.zip",
+        "load_priority": 30
+      },
+      {
+        "name": "CpuTopologyRebuild.kext",
+        "version": "2.0.2",
+        "description": "CPU topology for hybrid architectures",
+        "required": false,
+        "url": "https://github.com/usr-sse2/CpuTopologyRebuild/releases/download/2.0.2/CpuTopologyRebuild-2.0.2-RELEASE.zip",
+        "load_priority": 35,
+        "recommended_for": ["12th_gen", "13th_gen", "14th_gen"]
+      }
+    ],
+    "gpu": [
+      {
+        "name": "Skyscope-NVBridge.kext",
+        "version": "1.0.0",
+        "description": "NVIDIA driver bridge for Sequoia/Tahoe",
+        "required": false,
+        "custom": true,
+        "load_priority": 25,
+        "recommended_for": ["GTX 970", "GTX 980", "GTX 1080"]
+      }
+    ],
+    "other": [
+      {
+        "name": "AppleALC.kext",
+        "version": "1.9.5",
+        "description": "Audio patching",
+        "required": false,
+        "url": "https://github.com/acidanthera/AppleALC/releases/download/1.9.5/AppleALC-1.9.5-RELEASE.zip",
+        "load_priority": 40
+      },
+      {
+        "name": "NVMeFix.kext",
+        "version": "1.1.3",
+        "description": "NVMe power management and compatibility",
+        "required": false,
+        "url": "https://github.com/acidanthera/NVMeFix/releases/download/1.1.3/NVMeFix-1.1.3-RELEASE.zip",
+        "load_priority": 50
+      },
+      {
+        "name": "RestrictEvents.kext",
+        "version": "1.1.6",
+        "description": "Suppress unwanted system events",
+        "required": false,
+        "url": "https://github.com/acidanthera/RestrictEvents/releases/download/1.1.6/RestrictEvents-1.1.6-RELEASE.zip",
+        "load_priority": 60
+      }
+    ]
+  },
+  "nvidia_patches": {
+    "sequoia": {
+      "kext_patches": [
+        {
+          "name": "IOGraphicsFamily",
+          "find": "4E56494441000000",
+          "replace": "4E564944412D4D58",
+          "comment": "NVIDIA to NVIDIA-MX identifier patch"
+        },
+        {
+          "name": "AppleGraphicsControl",
+          "find": "4D61784B65726E656C",
+          "replace": "4D78584B726E6C30",
+          "comment": "Remove MaxKernel restriction"
+        }
+      ],
+      "framework_patches": [
+        {
+          "name": "Metal",
+          "find": "47505500000000000000",
+          "replace": "4E5644412D47505500",
+          "comment": "Force GPU detection as NVIDIA"
+        },
+        {
+          "name": "CoreDisplay",
+          "find": "4E56444141757468",
+          "replace": "4E56444158417574",
+          "comment": "Bypass NVIDIA authentication"
+        }
+      ],
+      "device_id_patches": {
+        "GTX 970": {
+          "original_id": "0x13C2",
+          "spoofed_id": "0x0FE0",
+          "comment": "Spoof as Kepler device"
+        }
+      },
+      "nvbridge_symbols": [
+        "NVDAStartupWeb",
+        "NVDAShutdownWeb",
+        "NVDARegisterWeb",
+        "NVDACallbackWeb"
+      ]
+    },
+    "tahoe": {
+      "kext_patches": [
+        {
+          "name": "IOGraphicsFamily",
+          "find": "4E56494441000000",
+          "replace": "4E564944412D4D58",
+          "comment": "NVIDIA to NVIDIA-MX identifier patch"
+        },
+        {
+          "name": "AppleGraphicsControl",
+          "find": "4D61784B65726E656C",
+          "replace": "4D78584B726E6C30",
+          "comment": "Remove MaxKernel restriction"
+        }
+      ],
+      "framework_patches": [
+        {
+          "name": "Metal",
+          "find": "47505500000000000000",
+          "replace": "4E5644412D47505500",
+          "comment": "Force GPU detection as NVIDIA"
+        },
+        {
+          "name": "CoreDisplay",
+          "find": "4E56444141757468",
+          "replace": "4E56444158417574",
+          "comment": "Bypass NVIDIA authentication"
+        },
+        {
+          "name": "MetalPerformanceShaders",
+          "find": "4D657461456E67696E65",
+          "replace": "4D657461456E67694E",
+          "comment": "Force Metal engine compatibility"
+        }
+      ],
+      "device_id_patches": {
+        "GTX 970": {
+          "original_id": "0x13C2",
+          "spoofed_id": "0x0FE0",
+          "comment": "Spoof as Kepler device"
+        }
+      },
+      "nvbridge_symbols": [
+        "NVDAStartupWeb",
+        "NVDAShutdownWeb",
+        "NVDARegisterWeb",
+        "NVDACallbackWeb",
+        "NVDAMetalPluginStart",
+        "NVDAMetalPluginStop"
+      ]
+    },
+    "cuda_support": {
+      "version": "12.9.1",
+      "url": "https://developer.download.nvidia.com/compute/cuda/12.9.1/local_installers/cuda-repo-debian12-12-9-local_12.9.1-575.57.08-1_amd64.deb",
+      "libraries": [
+        "libcuda.so.1",
+        "libnvidia-ml.so.1",
+        "libnvidia-encode.so.1",
+        "libnvidia-ptxjitcompiler.so.1"
+      ],
+      "environment_variables": {
+        "CUDA_HOME": "/usr/local/cuda-12.9.1",
+        "PATH": "$CUDA_HOME/bin:$PATH",
+        "LD_LIBRARY_PATH": "$CUDA_HOME/lib64:$LD_LIBRARY_PATH"
+      }
+    }
+  },
+  "intel_arc_patches": {
+    "arc_a770": {
+      "kext_patches": [
+        {
+          "name": "AppleIntelFramebuffer",
+          "find": "41617070496E74656C",
+          "replace": "41617270496E74656C",
+          "comment": "Force Intel Arc detection"
+        }
+      ],
+      "framework_patches": [
+        {
+          "name": "Metal",
+          "find": "496E74656C477075",
+          "replace": "496E74656C417263",
+          "comment": "Force Metal to use Intel Arc path"
+        }
+      ],
+      "device_properties": {
+        "AAPL,ig-platform-id": "0A00601",
+        "device-id": "5690",
+        "vendor-id": "8086",
+        "AAPL,Gfx324": "01000000",
+        "framebuffer-patch-enable": "01000000",
+        "framebuffer-stolenmem": "00003001",
+        "framebuffer-fbmem": "00009000"
+      },
+      "boot_args": "ipc_control_port_options=0 -wegnoigpu"
+    }
+  },
+  "cpu_patches": {
+    "alder_lake": {
+      "ssdt_patches": [
+        {
+          "name": "SSDT-ADLR.aml",
+          "description": "Alder Lake CPU support",
+          "required": true
+        }
+      ],
+      "kext_patches": [
+        {
+          "name": "AppleIntelCPUPowerManagement",
+          "find": "48B8000000000000000048",
+          "replace": "48B8000000000000000049",
+          "comment": "Fix CPU power management"
+        }
+      ],
+      "boot_args": "-ctrsmt=0",
+      "cpu_friend_data": {
+        "frequency_vectors": [
+          {"frequency": 3200, "voltage": 1100},
+          {"frequency": 4000, "voltage": 1250},
+          {"frequency": 4900, "voltage": 1380}
+        ],
+        "power_limits": {
+          "short_term": 241,
+          "long_term": 125
+        }
+      }
+    },
+    "raptor_lake": {
+      "ssdt_patches": [
+        {
+          "name": "SSDT-ADLR.aml",
+          "description": "Raptor Lake CPU support (same as Alder Lake)",
+          "required": true
+        }
+      ],
+      "kext_patches": [
+        {
+          "name": "AppleIntelCPUPowerManagement",
+          "find": "48B8000000000000000048",
+          "replace": "48B8000000000000000049",
+          "comment": "Fix CPU power management"
+        }
+      ],
+      "microcode_updates": {
+        "cpuid": "0x806F0",
+        "platform_id": "0x80",
+        "revision": "0x2C0"
+      },
+      "boot_args": "-ctrsmt=0",
+      "cpu_friend_data": {
+        "frequency_vectors": [
+          {"frequency": 3400, "voltage": 1100},
+          {"frequency": 4500, "voltage": 1280},
+          {"frequency": 5500, "voltage": 1420}
+        ],
+        "power_limits": {
+          "short_term": 253,
+          "long_term": 125
+        }
+      }
+    }
+  },
+  "installer_options": {
+    "shrink_options": {
+      "remove_languages": true,
+      "excluded_languages": ["en"],
+      "remove_unused_architectures": true,
+      "remove_debug_symbols": true,
+      "remove_printer_drivers": true,
+      "remove_additional_fonts": true,
+      "estimated_space_saved_mb": 300
+    },
+    "efi_partition_options": {
+      "format": "FAT32",
+      "size_mb": 200,
+      "label": "SKYSCOPE_EFI"
+    },
+    "boot_options": {
+      "default_timeout": 5,
+      "show_picker": true,
+      "boot_args": "-v"
+    }
+  },
+  "ui_settings": {
+    "theme": "dark",
+    "primary_color": "#3C5FA8",
+    "secondary_color": "#22203A",
+    "accent_color": "#00FFFF",
+    "font_family": "SF Pro",
+    "window_size": {
+      "width": 800,
+      "height": 600
+    },
+    "tabs": [
+      {
+        "name": "Welcome",
+        "icon": "home"
+      },
+      {
+        "name": "Hardware",
+        "icon": "cpu"
+      },
+      {
+        "name": "Create Installer",
+        "icon": "usb"
+      },
+      {
+        "name": "Patches",
+        "icon": "tools"
+      },
+      {
+        "name": "Advanced",
+        "icon": "settings"
+      }
+    ]
+  }
+}
