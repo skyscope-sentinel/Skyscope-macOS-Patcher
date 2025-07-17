@@ -171,7 +171,13 @@ check_python_version() {
     local python_version=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')
     log "DEBUG" "Detected Python version: $python_version"
     
-    if ! python3 -c "import sys; from packaging import version; sys.exit(0 if version.parse('$python_version') >= version.parse('$PYTHON_MIN_VERSION') else 1)"; then
+    # Use a simpler version comparison for compatibility with all Python versions
+    local major=$(echo "$python_version" | cut -d. -f1)
+    local minor=$(echo "$python_version" | cut -d. -f2)
+    local min_major=$(echo "$PYTHON_MIN_VERSION" | cut -d. -f1)
+    local min_minor=$(echo "$PYTHON_MIN_VERSION" | cut -d. -f2)
+    
+    if [ "$major" -lt "$min_major" ] || ([ "$major" -eq "$min_major" ] && [ "$minor" -lt "$min_minor" ]); then
         log "ERROR" "Python version $python_version is below the required version $PYTHON_MIN_VERSION"
         exit 1
     fi
@@ -179,12 +185,31 @@ check_python_version() {
     log "INFO" "Python version check passed: $python_version"
 }
 
+# Function to check if in Anaconda environment
+is_anaconda_env() {
+    # Check if conda command exists
+    if command -v conda &>/dev/null; then
+        # Check if we're in a conda environment
+        if [[ -n "$CONDA_PREFIX" || "$PATH" == *"anaconda"* || "$PATH" == *"miniconda"* ]]; then
+            return 0  # True
+        fi
+    fi
+    return 1  # False
+}
+
 # Function to check and install required packages
 check_dependencies() {
     log "INFO" "Checking dependencies..."
     
-    # Check for Homebrew
-    if ! command -v brew &>/dev/null; then
+    # Detect if we're in an Anaconda environment
+    local using_conda=false
+    if is_anaconda_env; then
+        log "INFO" "Detected Anaconda/Conda environment"
+        using_conda=true
+    fi
+    
+    # Check for Homebrew (only if not using conda)
+    if ! $using_conda && ! command -v brew &>/dev/null; then
         log "WARNING" "Homebrew not found. Installing Homebrew..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         if [ $? -ne 0 ]; then
@@ -204,18 +229,43 @@ check_dependencies() {
     # Check for pip
     if ! command -v pip3 &>/dev/null; then
         log "WARNING" "pip3 not found. Installing..."
-        python3 -m ensurepip || curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py
+        if $using_conda; then
+            conda install -y pip
+        else
+            python3 -m ensurepip || curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py
+        fi
         if [ $? -ne 0 ]; then
             log "ERROR" "Failed to install pip"
             exit 1
         fi
     fi
     
-    # Check for required Python packages
+    # Make sure packaging is installed first (needed for version checks)
+    if ! python3 -c "import packaging" &>/dev/null 2>&1; then
+        log "INFO" "Installing packaging module first (required for dependency checks)"
+        if $using_conda; then
+            conda install -y packaging
+        else
+            pip3 install packaging
+        fi
+    fi
+    
+    # Check for required Python packages using a more robust method
     local missing_packages=()
     for package in "${REQUIRED_PACKAGES[@]}"; do
-        if ! python3 -c "import $package" &>/dev/null 2>&1; then
-            missing_packages+=("$package")
+        # Try to import the package
+        if ! python3 -c "import importlib; importlib.import_module('$package')" &>/dev/null 2>&1; then
+            # Some packages have different import names than their pip package name
+            case "$package" in
+                "pyobjc")
+                    if ! python3 -c "import objc" &>/dev/null 2>&1; then
+                        missing_packages+=("$package")
+                    fi
+                    ;;
+                *)
+                    missing_packages+=("$package")
+                    ;;
+            esac
         fi
     done
     
@@ -226,24 +276,107 @@ check_dependencies() {
         
         for package in "${missing_packages[@]}"; do
             log "DEBUG" "Installing $package..."
-            if [ "$package" = "lief" ]; then
-                # Use pip for lief as Homebrew version can be problematic
-                pip3 install "$package"
-            elif [ "$package" = "wxPython" ]; then
-                # wxPython can be tricky, try pip first then fallback to brew
-                pip3 install -U wxPython || brew install wxpython
-            else
-                pip3 install "$package"
-            fi
             
-            if [ $? -ne 0 ]; then
-                log "ERROR" "Failed to install $package"
-                exit 1
+            # Special handling for different packages
+            case "$package" in
+                "wxPython")
+                    if $using_conda; then
+                        log "INFO" "Installing wxPython via conda-forge..."
+                        conda install -y -c conda-forge wxpython
+                        if [ $? -ne 0 ]; then
+                            log "WARNING" "Failed to install wxPython via conda. Trying pip with specific flags..."
+                            pip3 install -U --no-binary wxPython wxPython
+                            if [ $? -ne 0 ]; then
+                                log "WARNING" "Trying alternative wxPython installation method..."
+                                ARCHFLAGS="-arch $(uname -m)" pip3 install -U wxPython
+                                if [ $? -ne 0 ] && ! $using_conda; then
+                                    log "WARNING" "Falling back to Homebrew for wxPython..."
+                                    brew install wxpython
+                                fi
+                            fi
+                        fi
+                    else
+                        # For non-conda environments, try pip first then Homebrew
+                        pip3 install -U wxPython
+                        if [ $? -ne 0 ]; then
+                            log "WARNING" "Trying alternative wxPython installation method..."
+                            ARCHFLAGS="-arch $(uname -m)" pip3 install -U wxPython
+                            if [ $? -ne 0 ]; then
+                                log "WARNING" "Falling back to Homebrew for wxPython..."
+                                brew install wxpython
+                            fi
+                        fi
+                    fi
+                    ;;
+                    
+                "lief")
+                    # Always use pip for lief as it's more reliable
+                    pip3 install --upgrade lief
+                    if [ $? -ne 0 ]; then
+                        log "WARNING" "Failed to install lief via pip. Trying with --no-binary option..."
+                        pip3 install --upgrade --no-binary lief lief
+                    fi
+                    ;;
+                    
+                "dmgbuild")
+                    if $using_conda; then
+                        pip3 install dmgbuild
+                        if [ $? -ne 0 ]; then
+                            log "WARNING" "Failed to install dmgbuild. Will use alternative DMG creation method later."
+                        fi
+                    else
+                        pip3 install dmgbuild
+                        if [ $? -ne 0 ]; then
+                            log "WARNING" "Failed to install dmgbuild. Will use alternative DMG creation method later."
+                        fi
+                    fi
+                    ;;
+                    
+                "pyinstaller")
+                    if $using_conda; then
+                        conda install -y -c conda-forge pyinstaller
+                        if [ $? -ne 0 ]; then
+                            log "WARNING" "Failed to install pyinstaller via conda. Trying pip..."
+                            pip3 install --upgrade pyinstaller
+                        fi
+                    else
+                        pip3 install --upgrade pyinstaller
+                    fi
+                    ;;
+                    
+                *)
+                    # Default installation method
+                    if $using_conda; then
+                        # Try conda first, fall back to pip
+                        conda install -y $package || pip3 install --upgrade $package
+                    else
+                        pip3 install --upgrade $package
+                    fi
+                    ;;
+            esac
+            
+            # Verify installation
+            if ! python3 -c "import importlib; importlib.import_module('$package')" &>/dev/null 2>&1; then
+                case "$package" in
+                    "pyobjc")
+                        if ! python3 -c "import objc" &>/dev/null 2>&1; then
+                            log "WARNING" "Failed to verify installation of $package. Continuing anyway..."
+                        fi
+                        ;;
+                    "dmgbuild")
+                        log "WARNING" "Failed to install dmgbuild. Will use alternative DMG creation method."
+                        ;;
+                    *)
+                        log "WARNING" "Failed to verify installation of $package. Continuing anyway..."
+                        ;;
+                esac
+            else
+                log "DEBUG" "Successfully installed $package"
             fi
         done
     fi
     
-    log "INFO" "All dependencies satisfied"
+    log "INFO" "All dependencies satisfied or will be handled with fallbacks"
 }
 
 # Function to create directory structure
@@ -801,16 +934,14 @@ build_oclp() {
 create_dmg() {
     log "INFO" "Creating DMG installer..."
     
-    # Check if dmgbuild is installed
-    if ! command -v dmgbuild &>/dev/null; then
-        log "WARNING" "dmgbuild not found. Installing..."
-        pip3 install dmgbuild
-    fi
-    
-    # Create DMG settings file
-    local dmg_settings_file="$TEMP_DIR/dmg_settings.py"
-    
-    cat > "$dmg_settings_file" << EOF
+    # Check if dmgbuild is installed and working
+    if command -v dmgbuild &>/dev/null && python3 -c "import dmgbuild" &>/dev/null 2>&1; then
+        log "DEBUG" "Using dmgbuild for DMG creation"
+        
+        # Create DMG settings file
+        local dmg_settings_file="$TEMP_DIR/dmg_settings.py"
+        
+        cat > "$dmg_settings_file" << EOF
 # DMG settings for $APP_NAME
 app = "$OUTPUT_DIR/$APP_NAME.app"
 appname = "$APP_NAME"
@@ -825,15 +956,40 @@ icon_locations = {
 background = 'builtin-arrow'
 EOF
 
-    # Build the DMG
-    dmgbuild -s "$dmg_settings_file" "$APP_NAME" "$OUTPUT_DIR/$APP_NAME.dmg"
-    
-    if [ $? -ne 0 ]; then
-        log "ERROR" "DMG creation failed"
-        exit 1
+        # Build the DMG
+        dmgbuild -s "$dmg_settings_file" "$APP_NAME" "$OUTPUT_DIR/$APP_NAME.dmg"
+        
+        if [ $? -ne 0 ]; then
+            log "WARNING" "dmgbuild failed, falling back to hdiutil"
+            create_dmg_fallback
+        fi
+    else
+        log "WARNING" "dmgbuild not available, falling back to hdiutil"
+        create_dmg_fallback
     fi
     
     log "INFO" "DMG installer created: $OUTPUT_DIR/$APP_NAME.dmg"
+}
+
+# Fallback function for DMG creation using hdiutil
+create_dmg_fallback() {
+    log "INFO" "Creating DMG using hdiutil..."
+    
+    # Create a temporary directory for DMG creation
+    local temp_dmg_dir="$TEMP_DIR/dmg_build"
+    mkdir -p "$temp_dmg_dir"
+    
+    # Copy the app to the temporary directory
+    cp -R "$OUTPUT_DIR/$APP_NAME.app" "$temp_dmg_dir/"
+    
+    # Create a symbolic link to /Applications
+    ln -s /Applications "$temp_dmg_dir/Applications"
+    
+    # Create the DMG
+    hdiutil create -volname "$APP_NAME" -srcfolder "$temp_dmg_dir" -ov -format UDZO "$OUTPUT_DIR/$APP_NAME.dmg"
+    
+    # Clean up
+    rm -rf "$temp_dmg_dir"
 }
 
 # Function to install the built application
@@ -893,6 +1049,34 @@ show_help() {
     echo
 }
 
+# Function to clean up redundant build scripts
+clean_redundant_scripts() {
+    log "INFO" "Cleaning up redundant build scripts..."
+    
+    # List of scripts to check and potentially remove
+    local redundant_scripts=(
+        "build_and_release.sh"
+        "build_complete_skyscope.sh"
+        "build_skyscope_oclp.sh"
+        "install_skyscope.sh"
+    )
+    
+    for script in "${redundant_scripts[@]}"; do
+        if [ -f "$SCRIPT_DIR/$script" ] && [ "$script" != "$(basename "$0")" ]; then
+            log "INFO" "Found redundant script: $script"
+            
+            # Create backup directory if it doesn't exist
+            mkdir -p "$SCRIPT_DIR/old_scripts"
+            
+            # Move the script to the backup directory
+            mv "$SCRIPT_DIR/$script" "$SCRIPT_DIR/old_scripts/"
+            log "DEBUG" "Moved $script to old_scripts directory"
+        fi
+    done
+    
+    log "INFO" "Redundant scripts cleanup complete"
+}
+
 # Main function
 main() {
     echo -e "${CYAN}==========================================${NC}"
@@ -924,6 +1108,9 @@ main() {
     else
         BUILD_ONLY=false
     fi
+    
+    # Clean up redundant scripts to reduce confusion
+    clean_redundant_scripts
     
     # Total steps for progress tracking
     local total_steps=10

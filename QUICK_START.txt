@@ -1,0 +1,58 @@
+====================================================
+            Skyscope macOS Patcher – Quick Start
+====================================================
+
+1. What’s in this folder?
+   • skyscope_unified_compiler.sh  ←  MAIN build script   
+   • old_scripts/                  ←  Archived legacy scripts  
+   • RESOURCES/, src/, kexts/ …    ←  Source code & assets
+
+   All previous standalone build/install scripts have been moved to
+   “old_scripts” to prevent confusion.  Always use the unified script
+   unless you explicitly need to reference the older workflows.
+
+----------------------------------------------------
+2. Requirements
+   • macOS 14 (Sonoma) or newer as build host
+   • Xcode Command-Line Tools          (xcode-select --install)
+   • Python ≥ 3.8   (Anaconda or system Python both fine)
+   • 10 GB free disk space
+
+----------------------------------------------------
+3. Basic usage
+
+   # 1. Open Terminal in this directory
+   cd /path/to/Skyscope-macOS-Patcher
+
+   # 2. Show help / verify environment
+   ./skyscope_unified_compiler.sh --help
+
+   # 3. Build the app, DMG and custom kexts
+   ./skyscope_unified_compiler.sh --build
+     • Output: output/Skyscope macOS Patcher.app
+               output/Skyscope macOS Patcher.dmg
+
+   # 4. Install to /Applications and /Library/Extensions
+   ./skyscope_unified_compiler.sh --install
+
+   # 5. Clean all build artefacts (optional)
+   ./skyscope_unified_compiler.sh --clean
+
+----------------------------------------------------
+4. Troubleshooting
+
+   • If dependency installation fails in an Anaconda environment,
+     let the script finish – it will fall back to conda or brew where
+     possible.  Re-run with --build after resolving package issues.
+
+   • Build logs:  ~/skyscope_build.log  
+     Attach this file when asking for help.
+
+----------------------------------------------------
+5. Need more details?
+
+   • README.md          – full feature list & GPU matrix
+   • CONTRIBUTING.md    – developer guidelines
+   • advanced_config.json – hardware configuration database
+   • old_scripts/README_legacy.txt – notes on deprecated scripts
+====================================================
