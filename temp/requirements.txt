@@ -1,0 +1,6 @@
+wxPython==4.2.1
+packaging>=21.0
+pyinstaller>=5.0.0
+dmgbuild>=1.5.0
+pillow>=9.0.0
+lief>=0.12.0

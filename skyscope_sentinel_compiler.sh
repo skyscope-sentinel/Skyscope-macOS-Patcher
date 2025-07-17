@@ -211,18 +211,18 @@ EOF
             log "WARNING" "Some dependencies failed to install via pip, trying alternative methods..."
             
             # Try installing wxPython with alternative methods
-            python3 -m pip install --upgrade --no-binary wxPython wxPython==$WXPYTHON_VERSION || {
+            if ! python3 -m pip install --upgrade --no-binary wxPython wxPython=="$WXPYTHON_VERSION"; then
                 log "WARNING" "Failed to install wxPython via pip alternatives, trying Homebrew..."
-                
+
                 # Check if Homebrew is installed
                 if command -v brew &> /dev/null; then
-                    brew install wxpython || {
+                    if ! brew install wxpython; then
                         log "WARNING" "Failed to install wxPython via Homebrew."
-                    }
+                    fi
                 else
                     log "WARNING" "Homebrew not installed, cannot try that method for wxPython."
-                }
-            }
+                fi
+            fi
             
             # Install lief separately
             python3 -m pip install --upgrade lief || {
@@ -653,6 +653,8 @@ EOF
     log "INFO" "Adding audio codec support for $AUDIO_CODEC..."
     
     # Create audio support module
+    mkdir -p "$OCLP_DIR/resources/audio_patches"
+    
     cat > "$OCLP_DIR/resources/audio_patches/audio_support.py" << EOF
 """
 Audio codec support module for Skyscope Sentinel Intelligence Patcher
@@ -711,6 +713,8 @@ EOF
     log "INFO" "Adding boot arguments handling..."
     
     # Create boot arguments module
+    mkdir -p "$OCLP_DIR/resources/boot_args"
+    
     cat > "$OCLP_DIR/resources/boot_args/boot_args_handler.py" << EOF
 """
 Boot arguments handler module for Skyscope Sentinel Intelligence Patcher
@@ -771,6 +775,8 @@ EOF
     log "INFO" "Adding root patch fixes for macOS versions above Sequoia..."
     
     # Create root patch module
+    mkdir -p "$OCLP_DIR/resources/root_patch"
+    
     cat > "$OCLP_DIR/resources/root_patch/root_patch_handler.py" << 'EOF'
 """
 Root patch handler module for Skyscope Sentinel Intelligence Patcher
