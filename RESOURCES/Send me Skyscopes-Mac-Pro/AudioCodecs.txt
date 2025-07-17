@@ -1,8 +1,0 @@
-Codecs Detecteds:
-
-Vendor: ONBOARD
-Name: Realtek ALC897
-Codec: 0x10ec0897
-
-(VoodooHDA)	NVidia (Unknown) (10de:0071)
-		Controller 10de:0fbb (sub-ven:1043:8509)

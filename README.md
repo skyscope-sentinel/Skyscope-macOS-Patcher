@@ -1,155 +1,127 @@
-<!-- ========================= -->
-<!-- Skyscope macOS Patcher    -->
-<!-- README.md                 -->
-<!-- ========================= -->
-
+<!-- Centered Logo -->
 <p align="center">
-  <img src="skyscope-logo.png" alt="Skyscope Logo" width="320">
+  <img src="Resources/logo.png" alt="Skyscope macOS Patcher" width="280"/>
 </p>
 
-# Skyscope macOS Patcher
+<h1 align="center">Skyscope macOS Patcher</h1>
 
-Skyscope macOS Patcher is an all-in-one toolkit that unlocks **native NVIDIA GTX 970** and **Intel Arc A770** graphics acceleration on macOS **Sequoia** and **Tahoe**.  
-It merges the power of OpenCore Legacy Patcher with our custom kexts, Metal layers and automation scripts to deliver a seamless installation experience—no deep technical knowledge required.
+<p align="center">
+  Unified OpenCore-based patcher bringing native NVIDIA GTX 970 &amp; Intel Arc A770 acceleration<br/>
+  to macOS Sequoia, Tahoe and the 26.x beta cycle — wrapped in a single automated build script.
+</p>
+
+<p align="center">
+  <a href="#"><img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square"/></a>
+  <a href="#"><img src="https://img.shields.io/github/license/skyscope-cloud/Skyscope-macOS-Patcher?style=flat-square"/></a>
+  <a href="#"><img src="https://img.shields.io/github/v/release/skyscope-cloud/Skyscope-macOS-Patcher?style=flat-square"/></a>
+  <a href="#"><img src="https://img.shields.io/github/last-commit/skyscope-cloud/Skyscope-macOS-Patcher?style=flat-square"/></a>
+</p>
 
 ---
 
 ## ✨ Key Features
+* **Native GPU Acceleration**
+  * NVIDIA **GeForce GTX 970** (Maxwell, 4 GB) – Metal 3, CUDA, VideoToolbox  
+  * Intel **Arc A770** (Xe-HPG, 16 GB) – Metal 3, XMX, AV1/HEVC HW decode  
+* **macOS Beta Compatibility** – seamless operation on 26.0 → 26.3 betas with version-spoofing patches.
+* **Single Unified Script** – `skyscope_unified_compiler.sh` automates dependencies, patches OCLP, compiles GUI, creates DMG and installs custom kexts.
+* **Cross-Platform GUI** – PyInstaller‐built `.app`, `.dmg`, `.exe`, `.AppImage` artefacts.
+* **Professional Documentation & CI-ready build system**.
 
-- **Native GPU Support**  
-  • NVIDIA Maxwell/Pascal family (GTX 970, 980 Ti, 1070, 1080 Ti)  
-  • Intel Arc family (A770, A750, A580, A380)
+---
 
-- **Full Metal & CUDA Acceleration**  
-  Metal translation layers and CUDA bridge extracted from Linux drivers.
-
-- **Automatic macOS Installer & USB Creator**  
-  One-command fetch of macOS IPSW, EFI partitioning and OpenCore integration.
-
-- **Cross-Platform GUI Builder**  
-  Generates dark-themed desktop apps for **macOS (.app / .dmg)**, **Windows (.exe / .msi)** and **Linux (.AppImage)**.
-
-- **Advanced Configuration**  
-  JSON-based hardware database, debug logging, SIP handling, NVRAM tweaks.
-
-- **OpenCore Legacy Patcher Integration**  
-  Inherits all OCLP fixes (Wi-Fi, SMBIOS, Secure Boot) plus Skyscope enhancements.
+## 📦 Requirements
+* macOS 14 (Sonoma) or newer host for building  
+* Xcode CLT, Python ≥ 3.8  
+* 10 GB free disk space  
+* Supported hardware (see matrix below)
 
 ---
 
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/skyscope-patcher.git
-cd skyscope-patcher
+# 1. Clone the repo
+git clone https://github.com/skyscope-cloud/Skyscope-macOS-Patcher.git
+cd Skyscope-macOS-Patcher
 
-# 2. Install Pre Requisite items
-brew install --cask font-comic-relief
-brew install cmake python@3.11 llvm
+# 2. Build (installs dependencies automatically)
+./skyscope_unified_compiler.sh --build    # or simply `./skyscope_unified_compiler.sh`
 
-# The script in step 3. below will automate installation of any other needed libraries and/or applications automatically
-
-# 3. Build and install everything (macOS, run as normal user)
-./build_complete_skyscope.sh
+# 3. Install (optional step if you skipped the prompt)
+./skyscope_unified_compiler.sh --install
 ```
 
-The script will:
+After completion you will find:
 
-1. Install dependencies (Xcode CLI, Homebrew, Python libs).  
-2. Extract Linux GPU drivers.  
-3. Compile custom kexts.  
-4. Install kexts, set boot-args, rebuild caches.  
-5. Optionally create a bootable USB when `--usb /dev/diskX` is supplied.
-
-When privileged actions (copying kexts to /Library/Extensions, `nvram` writes, etc.) are reached, the
-script automatically prompts for your administrator password via `sudo`.  
-Running the whole script with `sudo` up-front is **not supported**—Homebrew refuses to operate as root.
-
-Reboot after completion to enjoy accelerated graphics.
+* `output/Skyscope macOS Patcher.app`
+* `output/Skyscope macOS Patcher.dmg`
 
 ---
 
-## 🖥️ Cross-Platform GUI Application Builder
+## 🖥️ GPU Support Matrix
 
-Skyscope ships with a helper script that packages the user-friendly GUI for every major OS in one go:
-
-```bash
-# macOS, Linux, or WSL2 terminal
-python3 scripts/build_gui_apps.py
-```
-
-What it does:
-
-| Platform | Framework | Output | Notes |
-|----------|-----------|--------|-------|
-| macOS    | PyInstaller + dmgbuild | `.app` bundle & signed `.dmg` | Universal (x64 & Apple Silicon) |
-| Windows  | PyInstaller + WiX Toolset | Portable `.exe` & `.msi` installer | Requires WiX on PATH |
-| Linux    | PyInstaller + appimage-tool | `.AppImage` | Produces single self-contained binary |
-
-The resulting installers live in `dist/` and include:
-
-- Dark-themed Qt / Tkinter interface  
-- Built-in OpenCore Legacy Patcher modules  
-- Automatic update checker
-
-*Tip:* Run with `--ci` to skip code-signing and make unattended builds for CI/CD.
+| Vendor  | Model                       | Architecture | Metal | Video Decode | Notes |
+|---------|----------------------------|--------------|-------|--------------|-------|
+| NVIDIA  | GeForce GTX 970            | Maxwell      | ✅    | H264/HEVC    | Full acceleration via **NVBridge.kext** |
+| NVIDIA  | GeForce GTX 980 Ti / 10-series (*experimental*) | Maxwell / Pascal | ✅ | H264/HEVC | Same driver path as GTX 970 |
+| Intel   | Arc A770                   | Xe-HPG       | ✅    | H264/HEVC/AV1| **ArcBridge.kext** with XMX support |
+| Intel   | Arc A750 / A580 / A380     | Xe-HPG       | ✅    | H264/HEVC/AV1| Experimental |
 
 ---
 
-## 📂 Project Structure
+## 🧪 macOS 26.x Beta Compatibility
+The patcher injects custom logic into OpenCore-Legacy-Patcher to recognise and spoof the following pre-release versions:
 
-```
-├─ src/                    # C++ kext sources
-├─ scripts/
-│   └─ build_gui_apps.py   # Cross-platform GUI packager
-├─ resources/
-│   ├─ Kexts/              # Compiled kext bundles
-│   └─ OpenCore/           # OCLP configs
-├─ build_complete_skyscope.sh
-└─ advanced_config.json
-```
-
-## ⚠️ Permissions & Troubleshooting
-
-• **Homebrew as root** – If you run the script with `sudo` you will encounter  
-  `Error: Running Homebrew as root is extremely dangerous and no longer supported.`  
-  Always start the script as a normal user; it will elevate only when required.  
-
-• **Log-file permission** – Build logs are written to `~/skyscope_build.log`.  
-  If you previously ran the script as root you may need to `sudo rm` the old log to  
-  avoid “Permission denied” errors on subsequent runs.  
-
-• **Need to re-enter sudo** – The helper keeps the sudo timestamp alive while it  
-  works, but if you step away for ~5 minutes you may be asked for your password a  
-  second time—this is normal macOS behaviour.
+| Marketing Name | Product Version | Build Prefix |
+|----------------|-----------------|--------------|
+| macOS Beta     | 26.0            | 26A |
+| macOS Beta 1   | 26.1            | 26B |
+| macOS Beta 2   | 26.2            | 26C |
+| macOS Beta 3   | 26.3            | 26D |
 
 ---
 
-## 🛠️ Requirements
+## 🛠️ Script Usage
 
-- macOS 12+ build host with Command Line Tools  
-- Python 3.11  
-- Homebrew packages: cmake, llvm, lief  
-- ~25 GB free disk space for IPSW & build artifacts
-
----
-
-## 📝 License
-
-Skyscope macOS Patcher is released under the **MIT License**.  
-Third-party components retain their original licenses (see `LICENSES/`).
+| Flag          | Description                                   |
+|---------------|-----------------------------------------------|
+| `--build`     | Build patcher, DMG and custom kexts           |
+| `--install`   | Install app and kexts to `/Applications` & `/Library/Extensions` |
+| `--clean`     | Remove build artefacts                        |
+| `--help`      | Show usage information                        |
 
 ---
 
-## 🤝 Recommended Partners
+## 🤝 Partnership
 
-<p align="center">
-  <a href="https://olarila.com" target="_blank">
-    <img src="olarila-logo.png" alt="Olarila Logo" width="160">
-  </a>
-</p>
+| Partner | Link | Role |
+|---------|------|------|
+| ![Olarila Logo](Resources/olarila_logo.png) | [olarila.com](https://www.olarila.com) | Community partner providing Hackintosh testing & support |
 
-Olarila.com provides high-quality vanilla macOS images, DSDT patches and an active community—perfect companions to Skyscope for crafting the ultimate Hackintosh experience.
+We proudly collaborate with **Olarila**, the trusted Hackintosh community, to validate real-world compatibility and provide user support channels.
 
 ---
+
+## 📚 Documentation
+* [Advanced Configuration](advanced_config.json)
+* [Developer Guide](CONTRIBUTING.md)
+* [Changelog](CHANGELOG.md) *(coming soon)*
+
+---
+
+## 🙌 Contributing
+Pull requests are welcome! Please read **CONTRIBUTING.md** for style guidelines, code-signing instructions and preferred commit structure.
+
+---
+
+## ⚖️ License
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🎉 Acknowledgements
+* **Dortania** – OpenCore-Legacy-Patcher foundation  
+* **Acidanthera** – Lilu, WhateverGreen, OpenCore  
+* **Apple** – macOS & Metal framework  
+* **Community Testers** – Olarila, Discord **#OCLP-Patcher-Paradise**  

@@ -1,1 +1,0 @@
--v alcid=12 watchdog=0 dk.e1000=0 e1000=0 npci=0x3000 -wegnoigpu ctrsmt=full amfi_get_out_of_my_way=0x1 ngfxcompat=1 ngfxgl=1 nvda_drv_vrl=1 

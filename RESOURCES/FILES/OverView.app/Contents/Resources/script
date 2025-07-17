@@ -1,6 +1,0 @@
-#!/bin/sh
-
-echo "                  "
-system_profiler SPSoftwareDataType SPHardwareDataType
-echo "                  "
-sysctl -a | grep machdep.cpu

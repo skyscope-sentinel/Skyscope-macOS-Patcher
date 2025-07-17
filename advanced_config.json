@@ -1,90 +1,524 @@
 {
-  "version": "1.0.0",
-  "build_date": "July 9, 2025",
-  "hardware_support": {
-    "nvidia_gpus": [
-      "NVIDIA GeForce GTX 970",
-      "NVIDIA GeForce GTX 980 Ti",
-      "NVIDIA GeForce GTX 1070",
-      "NVIDIA GeForce GTX 1080 Ti"
-    ],
-    "intel_gpus": [
-      "Intel Arc A770",
-      "Intel Arc A750",
-      "Intel Arc A580",
-      "Intel Arc A380"
-    ],
-    "intel_cpus": [
-      "Intel Alder Lake",
-      "Intel Raptor Lake"
-    ]
-  },
-  "macos_versions": {
-    "sequoia": "Sequoia",
-    "tahoe": "Tahoe"
-  },
-  "paths": {
-    "kexts_dir": "resources/Kexts",
-    "work_dir": "~/Library/Caches/SkyscopePatcher",
-    "output_dir": "~/Desktop/Skyscope_Output"
-  },
-  "options": {
-    "enable_nvidia": true,
-    "enable_intel_arc": true,
-    "enable_cuda": true,
-    "enable_metal": true,
-    "create_usb_installer": true,
-    "install_kexts": true,
-    "backup_system": true
-  },
-  "nvidia_options": {
-    "enable_gtx970": true,
-    "enable_gtx980ti": true,
-    "enable_gtx1070": true,
-    "enable_gtx1080ti": true,
-    "metal_compatibility": true,
-    "cuda_support": true,
-    "opencl_support": true,
-    "boot_args": "ngfxcompat=1 ngfxgl=1 nvda_drv_vrl=1"
-  },
-  "intel_arc_options": {
-    "enable_a770": true,
-    "enable_a750": true,
-    "enable_a580": false,
-    "enable_a380": false,
-    "metal_compatibility": true,
-    "opencl_support": true,
-    "boot_args": "iarccompat=1 iarcgl=1"
-  },
-  "cpu_options": {
-    "enable_alder_lake": true,
-    "enable_raptor_lake": true,
-    "power_management": true,
-    "boot_args": "ipc_control_port_options=0"
-  },
-  "installation": {
-    "auto_restart": false,
-    "disable_sip": true,
-    "create_recovery_backup": true,
-    "install_location": "/Library/Extensions",
-    "update_nvram": true
-  },
-  "usb_installer": {
-    "efi_size_mb": 200,
-    "installer_label": "Skyscope_Installer",
-    "include_opencore": true,
-    "opencore_config": "resources/OpenCore/config.plist",
-    "include_diagnostics": true
-  },
-  "advanced": {
-    "debug_mode": false,
-    "verbose_logging": false,
-    "extract_linux_drivers": true,
-    "linux_driver_versions": {
-      "nvidia": ["535.146.02", "550.54.14"],
-      "intel": ["23.17.26241.33"]
+    "version": "1.0.0",
+    "build_date": "2025-07-17",
+    "app_name": "Skyscope macOS Patcher",
+    "app_bundle_id": "com.skyscope.macos.patcher",
+    "supported_macos_versions": {
+        "sonoma": {
+            "version": "14.0",
+            "kernel_version": "23",
+            "build_prefix": "23A",
+            "minimum_build": "23A344",
+            "supported": true,
+            "requires_patching": false
+        },
+        "sequoia": {
+            "version": "15.0",
+            "kernel_version": "24",
+            "build_prefix": "24A",
+            "minimum_build": "24A273",
+            "supported": true,
+            "requires_patching": true
+        },
+        "tahoe": {
+            "version": "16.0",
+            "kernel_version": "25",
+            "build_prefix": "25A",
+            "minimum_build": "25A1",
+            "supported": true,
+            "requires_patching": true
+        },
+        "macos_beta": {
+            "version": "26.0",
+            "kernel_version": "26",
+            "build_prefix": "26A",
+            "minimum_build": "26A5",
+            "supported": true,
+            "requires_patching": true,
+            "is_beta": true,
+            "beta_notes": "Early macOS Beta support"
+        },
+        "macos_beta_1": {
+            "version": "26.1",
+            "kernel_version": "26",
+            "build_prefix": "26B",
+            "minimum_build": "26B5",
+            "supported": true,
+            "requires_patching": true,
+            "is_beta": true,
+            "beta_notes": "macOS Beta 1 support"
+        },
+        "macos_beta_2": {
+            "version": "26.2",
+            "kernel_version": "26",
+            "build_prefix": "26C",
+            "minimum_build": "26C5",
+            "supported": true,
+            "requires_patching": true,
+            "is_beta": true,
+            "beta_notes": "macOS Beta 2 support"
+        },
+        "macos_beta_3": {
+            "version": "26.3",
+            "kernel_version": "26",
+            "build_prefix": "26D",
+            "minimum_build": "26D5",
+            "supported": true,
+            "requires_patching": true,
+            "is_beta": true,
+            "beta_notes": "macOS Beta 3 support"
+        }
     },
-    "compatibility_checks": true,
-    "force_installation": false
-  }
+    "gpu_configurations": {
+        "nvidia": {
+            "GTX_970": {
+                "device_id": "0x13C2",
+                "vendor_id": "0x10DE",
+                "marketing_name": "NVIDIA GeForce GTX 970",
+                "architecture": "Maxwell",
+                "vram": 4096,
+                "metal_support": true,
+                "metal_version": "Metal 3",
+                "cuda_support": true,
+                "cuda_cores": 1664,
+                "min_driver_version": "1.0.0",
+                "recommended_driver": "1.1.0",
+                "requires_patching": true,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "patch_files": [
+                    "NVBridge.kext",
+                    "NVMetalBridge.kext"
+                ],
+                "features": {
+                    "hardware_acceleration": true,
+                    "multi_monitor": true,
+                    "hardware_video_decode": true,
+                    "hardware_video_encode": true,
+                    "hardware_h264": true,
+                    "hardware_hevc": true,
+                    "hardware_av1": false
+                }
+            },
+            "GTX_980Ti": {
+                "device_id": "0x17C8",
+                "vendor_id": "0x10DE",
+                "marketing_name": "NVIDIA GeForce GTX 980 Ti",
+                "architecture": "Maxwell",
+                "vram": 6144,
+                "metal_support": true,
+                "metal_version": "Metal 3",
+                "cuda_support": true,
+                "cuda_cores": 2816,
+                "min_driver_version": "1.0.0",
+                "recommended_driver": "1.1.0",
+                "requires_patching": true,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "patch_files": [
+                    "NVBridge.kext",
+                    "NVMetalBridge.kext"
+                ],
+                "features": {
+                    "hardware_acceleration": true,
+                    "multi_monitor": true,
+                    "hardware_video_decode": true,
+                    "hardware_video_encode": true,
+                    "hardware_h264": true,
+                    "hardware_hevc": true,
+                    "hardware_av1": false
+                }
+            },
+            "GTX_1070": {
+                "device_id": "0x1B81",
+                "vendor_id": "0x10DE",
+                "marketing_name": "NVIDIA GeForce GTX 1070",
+                "architecture": "Pascal",
+                "vram": 8192,
+                "metal_support": true,
+                "metal_version": "Metal 3",
+                "cuda_support": true,
+                "cuda_cores": 1920,
+                "min_driver_version": "1.0.0",
+                "recommended_driver": "1.1.0",
+                "requires_patching": true,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "patch_files": [
+                    "NVBridge.kext",
+                    "NVMetalBridge.kext"
+                ],
+                "features": {
+                    "hardware_acceleration": true,
+                    "multi_monitor": true,
+                    "hardware_video_decode": true,
+                    "hardware_video_encode": true,
+                    "hardware_h264": true,
+                    "hardware_hevc": true,
+                    "hardware_av1": false
+                }
+            },
+            "GTX_1080Ti": {
+                "device_id": "0x1B06",
+                "vendor_id": "0x10DE",
+                "marketing_name": "NVIDIA GeForce GTX 1080 Ti",
+                "architecture": "Pascal",
+                "vram": 11264,
+                "metal_support": true,
+                "metal_version": "Metal 3",
+                "cuda_support": true,
+                "cuda_cores": 3584,
+                "min_driver_version": "1.0.0",
+                "recommended_driver": "1.1.0",
+                "requires_patching": true,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "patch_files": [
+                    "NVBridge.kext",
+                    "NVMetalBridge.kext"
+                ],
+                "features": {
+                    "hardware_acceleration": true,
+                    "multi_monitor": true,
+                    "hardware_video_decode": true,
+                    "hardware_video_encode": true,
+                    "hardware_h264": true,
+                    "hardware_hevc": true,
+                    "hardware_av1": false
+                }
+            }
+        },
+        "intel": {
+            "Arc_A770": {
+                "device_id": "0x56A0",
+                "vendor_id": "0x8086",
+                "marketing_name": "Intel Arc A770",
+                "architecture": "Xe-HPG",
+                "vram": 16384,
+                "metal_support": true,
+                "metal_version": "Metal 3",
+                "min_driver_version": "1.0.0",
+                "recommended_driver": "1.1.0",
+                "requires_patching": true,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "patch_files": [
+                    "ArcBridge.kext",
+                    "ArcMetalBridge.kext"
+                ],
+                "features": {
+                    "hardware_acceleration": true,
+                    "multi_monitor": true,
+                    "hardware_video_decode": true,
+                    "hardware_video_encode": true,
+                    "hardware_h264": true,
+                    "hardware_hevc": true,
+                    "hardware_av1": true,
+                    "xmx_acceleration": true
+                }
+            },
+            "Arc_A750": {
+                "device_id": "0x56A1",
+                "vendor_id": "0x8086",
+                "marketing_name": "Intel Arc A750",
+                "architecture": "Xe-HPG",
+                "vram": 8192,
+                "metal_support": true,
+                "metal_version": "Metal 3",
+                "min_driver_version": "1.0.0",
+                "recommended_driver": "1.1.0",
+                "requires_patching": true,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "patch_files": [
+                    "ArcBridge.kext",
+                    "ArcMetalBridge.kext"
+                ],
+                "features": {
+                    "hardware_acceleration": true,
+                    "multi_monitor": true,
+                    "hardware_video_decode": true,
+                    "hardware_video_encode": true,
+                    "hardware_h264": true,
+                    "hardware_hevc": true,
+                    "hardware_av1": true,
+                    "xmx_acceleration": true
+                }
+            },
+            "Arc_A580": {
+                "device_id": "0x56A5",
+                "vendor_id": "0x8086",
+                "marketing_name": "Intel Arc A580",
+                "architecture": "Xe-HPG",
+                "vram": 8192,
+                "metal_support": true,
+                "metal_version": "Metal 3",
+                "min_driver_version": "1.0.0",
+                "recommended_driver": "1.1.0",
+                "requires_patching": true,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "patch_files": [
+                    "ArcBridge.kext",
+                    "ArcMetalBridge.kext"
+                ],
+                "features": {
+                    "hardware_acceleration": true,
+                    "multi_monitor": true,
+                    "hardware_video_decode": true,
+                    "hardware_video_encode": true,
+                    "hardware_h264": true,
+                    "hardware_hevc": true,
+                    "hardware_av1": true,
+                    "xmx_acceleration": true
+                }
+            },
+            "Arc_A380": {
+                "device_id": "0x56A6",
+                "vendor_id": "0x8086",
+                "marketing_name": "Intel Arc A380",
+                "architecture": "Xe-HPG",
+                "vram": 6144,
+                "metal_support": true,
+                "metal_version": "Metal 3",
+                "min_driver_version": "1.0.0",
+                "recommended_driver": "1.1.0",
+                "requires_patching": true,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "patch_files": [
+                    "ArcBridge.kext",
+                    "ArcMetalBridge.kext"
+                ],
+                "features": {
+                    "hardware_acceleration": true,
+                    "multi_monitor": true,
+                    "hardware_video_decode": true,
+                    "hardware_video_encode": true,
+                    "hardware_h264": true,
+                    "hardware_hevc": true,
+                    "hardware_av1": true,
+                    "xmx_acceleration": true
+                }
+            }
+        }
+    },
+    "cpu_configurations": {
+        "intel": {
+            "i7_12700K": {
+                "marketing_name": "Intel Core i7-12700K",
+                "architecture": "Alder Lake",
+                "cores": 12,
+                "performance_cores": 8,
+                "efficiency_cores": 4,
+                "threads": 20,
+                "base_frequency": 3.6,
+                "max_turbo_frequency": 5.0,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "requires_patching": true,
+                "patch_files": [
+                    "CPUFriend.kext",
+                    "CPUFriendDataProvider.kext"
+                ],
+                "features": {
+                    "power_management": true,
+                    "turbo_boost": true,
+                    "avx512": false,
+                    "hybrid_architecture": true
+                }
+            },
+            "i9_12900K": {
+                "marketing_name": "Intel Core i9-12900K",
+                "architecture": "Alder Lake",
+                "cores": 16,
+                "performance_cores": 8,
+                "efficiency_cores": 8,
+                "threads": 24,
+                "base_frequency": 3.2,
+                "max_turbo_frequency": 5.2,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "requires_patching": true,
+                "patch_files": [
+                    "CPUFriend.kext",
+                    "CPUFriendDataProvider.kext"
+                ],
+                "features": {
+                    "power_management": true,
+                    "turbo_boost": true,
+                    "avx512": false,
+                    "hybrid_architecture": true
+                }
+            },
+            "i7_13700K": {
+                "marketing_name": "Intel Core i7-13700K",
+                "architecture": "Raptor Lake",
+                "cores": 16,
+                "performance_cores": 8,
+                "efficiency_cores": 8,
+                "threads": 24,
+                "base_frequency": 3.4,
+                "max_turbo_frequency": 5.4,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "requires_patching": true,
+                "patch_files": [
+                    "CPUFriend.kext",
+                    "CPUFriendDataProvider.kext"
+                ],
+                "features": {
+                    "power_management": true,
+                    "turbo_boost": true,
+                    "avx512": false,
+                    "hybrid_architecture": true
+                }
+            },
+            "i9_13900K": {
+                "marketing_name": "Intel Core i9-13900K",
+                "architecture": "Raptor Lake",
+                "cores": 24,
+                "performance_cores": 8,
+                "efficiency_cores": 16,
+                "threads": 32,
+                "base_frequency": 3.0,
+                "max_turbo_frequency": 5.8,
+                "supported_macos_versions": ["sequoia", "tahoe", "macos_beta", "macos_beta_1", "macos_beta_2", "macos_beta_3"],
+                "requires_patching": true,
+                "patch_files": [
+                    "CPUFriend.kext",
+                    "CPUFriendDataProvider.kext"
+                ],
+                "features": {
+                    "power_management": true,
+                    "turbo_boost": true,
+                    "avx512": false,
+                    "hybrid_architecture": true
+                }
+            }
+        }
+    },
+    "kext_configurations": {
+        "NVBridge.kext": {
+            "version": "1.0.0",
+            "bundle_id": "com.skyscope.driver.NVBridge",
+            "description": "NVIDIA GPU Bridge Driver for macOS",
+            "requires": [
+                "Lilu.kext"
+            ],
+            "conflicts": [],
+            "install_path": "/Library/Extensions",
+            "features": [
+                "Metal acceleration",
+                "Multi-monitor support",
+                "Hardware video acceleration"
+            ]
+        },
+        "NVMetalBridge.kext": {
+            "version": "1.0.0",
+            "bundle_id": "com.skyscope.driver.NVMetalBridge",
+            "description": "NVIDIA Metal Compatibility Layer",
+            "requires": [
+                "NVBridge.kext",
+                "Lilu.kext"
+            ],
+            "conflicts": [],
+            "install_path": "/Library/Extensions",
+            "features": [
+                "Metal API translation",
+                "Shader compilation",
+                "Pipeline state management"
+            ]
+        },
+        "ArcBridge.kext": {
+            "version": "1.0.0",
+            "bundle_id": "com.skyscope.driver.ArcBridge",
+            "description": "Intel Arc GPU Bridge Driver for macOS",
+            "requires": [
+                "Lilu.kext"
+            ],
+            "conflicts": [],
+            "install_path": "/Library/Extensions",
+            "features": [
+                "Metal acceleration",
+                "Multi-monitor support",
+                "Hardware video acceleration",
+                "XMX acceleration"
+            ]
+        },
+        "ArcMetalBridge.kext": {
+            "version": "1.0.0",
+            "bundle_id": "com.skyscope.driver.ArcMetalBridge",
+            "description": "Intel Arc Metal Compatibility Layer",
+            "requires": [
+                "ArcBridge.kext",
+                "Lilu.kext"
+            ],
+            "conflicts": [],
+            "install_path": "/Library/Extensions",
+            "features": [
+                "Metal API translation",
+                "Shader compilation",
+                "Pipeline state management",
+                "XMX acceleration"
+            ]
+        },
+        "CPUFriend.kext": {
+            "version": "1.2.9",
+            "bundle_id": "org.acidanthera.CPUFriend",
+            "description": "Dynamic power management data injection",
+            "requires": [
+                "Lilu.kext"
+            ],
+            "conflicts": [],
+            "install_path": "/Library/Extensions",
+            "features": [
+                "Power management",
+                "Frequency scaling",
+                "Energy efficiency"
+            ]
+        }
+    },
+    "app_settings": {
+        "default_settings": {
+            "verbose_boot": false,
+            "debug_mode": false,
+            "sip_enabled": true,
+            "secure_boot": "disabled",
+            "nvram_write": true,
+            "show_picker": true,
+            "boot_timeout": 5,
+            "allow_native_spoofs": false
+        },
+        "beta_settings": {
+            "verbose_boot": true,
+            "debug_mode": true,
+            "sip_enabled": false,
+            "secure_boot": "disabled",
+            "nvram_write": true,
+            "show_picker": true,
+            "boot_timeout": 5,
+            "allow_native_spoofs": true
+        },
+        "advanced_features": {
+            "allow_ts2_accel": true,
+            "drm_support": false,
+            "force_nv_web": false,
+            "force_output_support": false,
+            "amd_gop_injection": false,
+            "nvidia_kepler_gop_injection": false,
+            "metal_build": false,
+            "disable_tb": false,
+            "dgpu_switch": false,
+            "force_surplus": false,
+            "disable_fw_throttle": false,
+            "software_demux": false,
+            "force_vmm": false,
+            "set_vmm_cpuid": false,
+            "disable_mediaanalysisd": true,
+            "force_quad_thread": false,
+            "set_alc_usage": true,
+            "allow_3rd_party_drives": true,
+            "allow_nvme_fixing": true,
+            "apfs_trim_timeout": true
+        }
+    },
+    "partnerships": {
+        "olarila": {
+            "name": "Olarila",
+            "website": "https://www.olarila.com",
+            "description": "Olarila Hackintosh Community",
+            "partnership_type": "community",
+            "logo_path": "Resources/olarila_logo.png"
+        }
+    }
 }
