@@ -1,0 +1,1 @@
+machdep.cpu.brand_string: 12th Gen Intel(R) Core(TM) i7-12700

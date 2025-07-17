@@ -1,0 +1,26 @@
+#!/bin/sh
+echo '              '
+echo "Hello `users`!"
+echo '              '
+echo '--System Version--'
+sw_vers
+echo '              '
+echo '--Smbios--'
+sysctl -n hw.model
+echo '              '
+echo '--Processor--'
+sysctl -n machdep.cpu.brand_string
+echo '              '
+echo '--Physical CPU--'
+sysctl -n hw.physicalcpu_max
+echo '              '
+echo '--Logical CPU--'
+sysctl -n hw.logicalcpu_max
+echo '              '
+echo '--Audio Codec--'
+ioreg -rxn IOHDACodecDevice | grep VendorID | awk '{ print $4 }' | sed 's/ffffffff//'
+echo '              '
+echo '--VDA Decoder Checker--'
+./VDADecoderChecker
+echo '              '
+echo 'VDA Decoder Credits: breuhan and Acidanthera'
